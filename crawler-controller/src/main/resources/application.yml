@@ -1,0 +1,38 @@
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: "root"
+    password: "123456"
+    url: jdbc:mysql://localhost:3306/crawler-platform?serverTimezone=GMT%2B8&charset=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
+
+
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: crawler-platform
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    consumer:
+      group-id: community-consumer-group
+      enable-auto-commit: true
+      auto-commit-interval: 3000
+    producer:
+      retries: 0
+      acks: 1
+      batch-size: 16384
+
+server:
+  port: 6048
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.crawlerserver.entity
+  configuration:
+    use-generated-keys: true
+    map-underscore-to-camel-case: true
