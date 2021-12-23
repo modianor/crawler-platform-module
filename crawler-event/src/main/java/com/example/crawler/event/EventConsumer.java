@@ -1,4 +1,4 @@
-package com.example.crawler.event.event;
+package com.example.crawler.event;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Event;
@@ -38,7 +38,7 @@ public class EventConsumer {
     }
 
     // 消费Detail任务数据
-    @KafkaListener(topics = {TOPIC_Detail})
+    /*@KafkaListener(topics = {TOPIC_Detail})
     public void handleDetailMessage(ConsumerRecord record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
@@ -51,7 +51,6 @@ public class EventConsumer {
             return;
         }
 
-        iTaskService.pushTask(event.getTask());
         logger.info("Kafka处理Event:" + event.toString().substring(0, 1000));
-    }
+    }*/
 }

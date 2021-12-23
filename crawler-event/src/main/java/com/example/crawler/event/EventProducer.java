@@ -1,4 +1,4 @@
-package com.example.crawler.event.event;
+package com.example.crawler.event;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Event;

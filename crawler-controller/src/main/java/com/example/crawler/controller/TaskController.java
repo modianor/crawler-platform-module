@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Task;
-import com.example.crawler.event.event.EventProducer;
+import com.example.crawler.event.EventProducer;
 import com.example.crawler.service.ITaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

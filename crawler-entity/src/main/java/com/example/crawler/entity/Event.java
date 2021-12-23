@@ -19,8 +19,10 @@ public class Event {
     private String entityType;
     // 事件包含的Task
     private JSONObject task;
-    // 事件包含的data
+    // 事件包含的原始结构化数据
     private String data;
+    // 事件包含的业务结构化数据
+    private JSONObject obj;
 
     public String getTopic() {
         return topic;
@@ -74,5 +76,27 @@ public class Event {
     public Event setTaskId(String taskId) {
         this.taskId = taskId;
         return this;
+    }
+
+    public JSONObject getObj() {
+        return obj;
+    }
+
+    public Event setObj(JSONObject obj) {
+        this.obj = obj;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "policyId='" + policyId + '\'' +
+                ", taskId='" + taskId + '\'' +
+                ", topic='" + topic + '\'' +
+                ", entityType='" + entityType + '\'' +
+                ", task=" + task +
+                ", data='" + data + '\'' +
+                ", obj=" + obj +
+                '}';
     }
 }
