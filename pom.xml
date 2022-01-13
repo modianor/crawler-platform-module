@@ -12,6 +12,7 @@
         <module>crawler-event</module>
         <module>crawler-controller</module>
         <module>crawler-structure</module>
+        <module>crawler-test</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -47,6 +48,12 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-mongodb</artifactId>
+                <version>2.5.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
                 <version>2.5.5</version>
             </dependency>
             <dependency>
@@ -106,15 +113,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.5.5</version>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
