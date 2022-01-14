@@ -33,7 +33,7 @@ public class EventConsumer {
             return;
         }
 
-        iTaskService.pushTask(event.getTask());
+        iTaskService.pushTask(event.getTask(), true);
         logger.info("Kafka处理Event:" + event.toString());
     }
 

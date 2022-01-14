@@ -12,11 +12,13 @@ public interface ITaskService {
 
     void pushTasks(List<JSONObject> tasks);
 
-    void pushTask(JSONObject task);
+    void pushTask(JSONObject task, Boolean duplication);
 
     Boolean doDeduplication(JSONObject task);
 
     Boolean isTurnOnDeduplication(JSONObject task);
+
+    Boolean updateDeduplication(JSONObject task, String taskMd5);
 
     Boolean isDuplication(JSONObject task, String taskMd5);
 

@@ -7,9 +7,12 @@ import com.example.crawler.dao.ITaskDao;
 import com.example.crawler.entity.Task;
 import com.example.crawler.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -57,6 +60,27 @@ public class TaskService implements ITaskService {
     }
 
     @Override
+    public Boolean updateDeduplication(JSONObject task, String taskMd5) {
+        String policyId = task.getString("policyId");
+        //指定索引和id
+        JSONObject obj = new JSONObject();
+        obj.put("taskSignature", taskMd5);
+        IndexRequest request = new IndexRequest(policyId.toLowerCase(Locale.ROOT));
+        request.source(obj.toJSONString(), XContentType.JSON);
+        //执行保存操作
+        IndexResponse indexResponse = null;
+        try {
+            indexResponse = restHighLevelClient.index(request, ElasticSearchConfig.COMMON_OPTIONS);
+            log.info("重复任务进入消重服务, {}", indexResponse.toString());
+        } catch (IOException e) {
+            log.error("重复任务进入消重服务错误, {}", e.toString());
+            return false;
+        }
+        System.out.println(indexResponse);
+        return true;
+    }
+
+    @Override
     public Boolean isDuplication(JSONObject task, String taskMd5) {
         String policyId = task.getString("policyId");
         //1.创建检索请求
@@ -99,7 +123,11 @@ public class TaskService implements ITaskService {
                     stringBuffer.append(value);
                 }
                 String taskMd5 = DigestUtils.md5DigestAsHex(stringBuffer.toString().getBytes());
-                return isDuplication(task, taskMd5);
+                Boolean exsit = isDuplication(task, taskMd5);
+                if (!exsit) {
+                    updateDeduplication(task, taskMd5);
+                }
+                return exsit;
             }
         } else {
             // 不开启消重或者消重字段为None
@@ -109,12 +137,23 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void pushTask(JSONObject task) {
+    public void pushTask(JSONObject task,Boolean duplication) {
         // 根据消重结果判断是否进入爬虫任务队列
         Boolean exist = doDeduplication(task);
-        if (!exist) {
+        if (duplication) {
+            // 爬虫端生成子任务，需要进入消重流程
+            if (!exist) {
+                iTaskDao.pushTask(task);
+                log.info("爬虫子任务不需要消重:{}", task.toJSONString());
+            } else {
+                log.warn("爬虫子任务已被消重:{}", task.toJSONString());
+            }
+        }else {
+            // 任务来源程序生成任务，不需要进行消重
             iTaskDao.pushTask(task);
+            log.info("任务来源程序生成任务，不需要消重:{}", task.toJSONString());
         }
+
     }
 
     @Override

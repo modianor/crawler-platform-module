@@ -74,7 +74,15 @@ public class TaskController {
     @ResponseBody
     public String generateTaskParam(String taskParam) {
         JSONObject task = JSON.parseObject(taskParam);
-        iTaskService.pushTask(task);
+        iTaskService.pushTask(task, true);
+        return "{\"status\":\"ok\"}";
+    }
+
+    @RequestMapping(path = "/generateTaskSourceParam", method = RequestMethod.POST)
+    @ResponseBody
+    public String generateTaskSourceParam(String taskParam) {
+        JSONObject task = JSON.parseObject(taskParam);
+        iTaskService.pushTask(task, false);
         return "{\"status\":\"ok\"}";
     }
 
