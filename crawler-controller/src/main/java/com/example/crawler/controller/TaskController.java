@@ -35,7 +35,10 @@ public class TaskController {
     @ResponseBody
     public String uploadTask(String task, String result) {
         JSONObject taskObj = JSON.parseObject(task);
-        List<JSONObject> childTasks = getTasksFromString(result);
+        // 确认任务返回结果
+        iTaskService.acknowledgeTask(taskObj);
+        // 处理任务结果
+        List<JSONObject> childTasks = getTasksFromString(taskObj, result);
         for (JSONObject childTask : childTasks) {
             Event event = new Event()
                     .setPolicyId(taskObj.getString("policyId"))
@@ -52,6 +55,8 @@ public class TaskController {
     @ResponseBody
     public String uploadTaskData(String task, String data) {
         JSONObject taskObj = JSON.parseObject(task);
+        // 确认任务返回结果
+        iTaskService.acknowledgeTask(taskObj);
         Event event = new Event()
                 .setPolicyId(taskObj.getString("policyId"))
                 .setTaskId(taskObj.getString("taskId"))

@@ -16,4 +16,6 @@ public interface ITaskDao {
     void pushProgressTask(JSONObject task);
 
     List<JSONObject> getProgressTasks();
+
+    void removeTask(String redisKey, JSONObject task);
 }

@@ -137,23 +137,29 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void pushTask(JSONObject task,Boolean duplication) {
+    public void pushTask(JSONObject task, Boolean duplication) {
         // 根据消重结果判断是否进入爬虫任务队列
         Boolean exist = doDeduplication(task);
         if (duplication) {
             // 爬虫端生成子任务，需要进入消重流程
             if (!exist) {
                 iTaskDao.pushTask(task);
-                log.info("爬虫子任务不需要消重:{}", task.toJSONString());
+                log.info(String.format("爬虫子任务不需要消重:[%s]", task.toJSONString()));
             } else {
-                log.warn("爬虫子任务已被消重:{}", task.toJSONString());
+                log.warn(String.format("爬虫子任务已被消重:[%s]", task.toJSONString()));
             }
-        }else {
+        } else {
             // 任务来源程序生成任务，不需要进行消重
             iTaskDao.pushTask(task);
-            log.info("任务来源程序生成任务，不需要消重:{}", task.toJSONString());
+            log.info(String.format("任务来源程序生成任务，不需要消重:[%s]", task.toJSONString()));
         }
 
+    }
+
+    @Override
+    public void acknowledgeTask(JSONObject task) {
+        String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
+        iTaskDao.removeTask(redisKey, task);
     }
 
     @Override
@@ -162,8 +168,8 @@ public class TaskService implements ITaskService {
         for (String policyId : policyIds) {
             JSONObject task = iTaskDao.getTaskParam(policyId);
             if (task != null) {
-                tasks.add(task);
                 task.put("in_progress_time", (int) (System.currentTimeMillis() / 1000));
+                tasks.add(task);
                 iTaskDao.pushProgressTask(task);
             }
         }

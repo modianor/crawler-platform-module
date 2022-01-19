@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -65,14 +66,25 @@ public class TaskDao implements ITaskDao {
     @Override
     public void pushProgressTask(JSONObject task) {
         String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
-        redisTemplate.opsForList().leftPush(redisKey, task.toJSONString());
+        redisTemplate.opsForList().rightPush(redisKey, task.toJSONString());
     }
 
     @Override
     public List<JSONObject> getProgressTasks() {
         String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
         Long size = redisTemplate.opsForList().size(redisKey);
-        redisTemplate.opsForList().range(redisKey, 0, size);
-        return null;
+        List<JSONObject> tasks = new ArrayList<>();
+        List<Object> taskObjs = redisTemplate.opsForList().range(redisKey, 0, size);
+        for (Object taskObj : taskObjs) {
+            String taskJsonStr = (String) taskObj;
+            JSONObject task = JSON.parseObject(taskJsonStr);
+            tasks.add(task);
+        }
+        return tasks;
+    }
+
+    @Override
+    public void removeTask(String redisKey,JSONObject task) {
+        redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
     }
 }

@@ -17,7 +17,7 @@ import java.io.IOException;
 public class BISHEIMAOTOUSU extends BasicStructurer {
     @Override
     @KafkaListener(topics = {"TP_BDG_AD_HEIMAOTOUSU_BISSTRUCT"})
-    public void doStructure(ConsumerRecord record) throws IOException {
+    public void doStructure(ConsumerRecord<String, String> record) throws IOException {
         if (record == null || record.value() == null) {
             log.error("消息的内容为空!");
             return;

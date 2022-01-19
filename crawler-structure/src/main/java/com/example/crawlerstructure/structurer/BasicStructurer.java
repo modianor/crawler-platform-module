@@ -15,7 +15,7 @@ public abstract class BasicStructurer {
 
     }
 
-    public void doStructure(ConsumerRecord record) throws IOException {
+    public void doStructure(ConsumerRecord<String, String> record) throws IOException {
 
     }
 

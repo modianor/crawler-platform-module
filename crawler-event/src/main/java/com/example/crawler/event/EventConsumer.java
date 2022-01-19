@@ -21,7 +21,7 @@ public class EventConsumer {
 
     // 消费List Data任务
     @KafkaListener(topics = {TOPIC_LIST})
-    public void handleListDataMessage(ConsumerRecord record) {
+    public void handleListDataMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
             return;

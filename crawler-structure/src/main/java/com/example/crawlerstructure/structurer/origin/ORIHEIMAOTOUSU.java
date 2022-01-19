@@ -22,6 +22,7 @@ public class ORIHEIMAOTOUSU extends BasicStructurer {
     private EventProducer eventProducer;
     public String oriTopic = "";
     public String bissTopic = "";
+
     public ORIHEIMAOTOUSU() {
         this.policyId = "HEIMAOTOUSU";
         this.oriTopic = this.getOriginStructureTopic();
@@ -30,7 +31,7 @@ public class ORIHEIMAOTOUSU extends BasicStructurer {
 
     @Override
     @KafkaListener(topics = {"TP_BDG_AD_HEIMAOTOUSU_ORISTRUCT"})
-    public void doStructure(ConsumerRecord record) throws IOException {
+    public void doStructure(ConsumerRecord<String, String> record) throws IOException {
         if (record == null || record.value() == null) {
             log.error("消息的内容为空!");
             return;

@@ -4,11 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Task;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskUtil {
+
+    private static final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
+
     public static String dump_task(Task task) {
         return JSON.toJSONString(task);
     }
@@ -17,8 +21,12 @@ public class TaskUtil {
         return JSON.parseObject(task_json, Task.class);
     }
 
-    public static List<JSONObject> getTasksFromString(String taskString) {
+    public static List<JSONObject> getTasksFromString(JSONObject parentTask, String taskString) {
         List<JSONObject> tasks = new ArrayList<>();
+        String parentTaskId = "";
+        if (parentTask != null) {
+            parentTaskId = parentTask.getString("taskId");
+        }
         JSONArray taskParams = (JSONArray) JSON.parse(taskString);
         for (int i = 0; i < taskParams.size(); i++) {
             JSONArray params = taskParams.getJSONArray(i);
@@ -32,6 +40,8 @@ public class TaskUtil {
             String taskType = policyIdAndTaskType[1];
 
             JSONObject task = new JSONObject();
+            task.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
+            task.put("parentTaskId", parentTaskId);
             task.put("policyId", policyId);
             task.put("taskType", taskType);
             task.put("urlSign", urlSign);

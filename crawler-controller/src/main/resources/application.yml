@@ -1,13 +1,13 @@
 spring:
   redis:
-    host: 127.0.0.1
+    host: hadoop102
     port: 6379
     database: 0
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: "root"
-    password: "123456"
+    password: "2482510236"
     url: jdbc:mysql://localhost:3306/crawler-platform?serverTimezone=GMT%2B8&charset=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
 
 
@@ -17,7 +17,7 @@ spring:
       port: 27017
       database: crawler-platform
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
+    bootstrap-servers: hadoop102:9092
     consumer:
       group-id: community-consumer-group
       enable-auto-commit: true

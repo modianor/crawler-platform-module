@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class EventProducer {
 
     @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     // 处理事件
     public void fireEvent(Event event) {

@@ -26,5 +26,5 @@ public interface ITaskService {
 
     JSONArray getTaskParams(List<String> policyIds);
 
-
+    void acknowledgeTask(JSONObject taskObj);
 }
