@@ -19,6 +19,9 @@ public class EventConsumer {
     @Autowired
     private ITaskService iTaskService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     // 消费List Data任务
     @KafkaListener(topics = {TOPIC_LIST})
     public void handleListDataMessage(ConsumerRecord<String, String> record) {
@@ -51,6 +54,15 @@ public class EventConsumer {
             return;
         }
         JSONObject task = event.getTask();
+
+        // 通过消费kafka消息将任务状态和日志发送到logstash
+        Event visualEvent = new Event()
+                .setPolicyId(task.getString("policyId"))
+                .setTaskId(task.getString("taskId"))
+                .setEntityType(task.getString("taskType"))
+                .setTopic("TP_BDG_AD_VISUAL_COMPLETED_TASK")
+                .setTask(task);
+        eventProducer.fireEvent(visualEvent);
         logger.info("Kafka处理Event:" + event);
     }
 }

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 
 import static com.example.crawler.utils.TaskUtil.getTasksFromString;
 
@@ -39,67 +39,62 @@ public class TaskController {
         JSONObject taskObj = JSON.parseObject(task);
         // 确认任务返回结果
         Boolean timeoutStatus = iTaskService.acknowledgeTask(taskObj);
+
+        String policyId = taskObj.getString("policyId");
+        String taskType = taskObj.getString("taskType");
+        String taskId = taskObj.getString("taskId");
+
         if (timeoutStatus) {
-            // 确认任务没有超时，正常处理任务结果
-            taskObj.put("status", status);
-            if (Objects.equals(status, Status.SUCCESS)) {
-                // 任务处理成功且包含有效数据
-                List<JSONObject> childTasks = getTasksFromString(taskObj, result);
-                for (JSONObject childTask : childTasks) {
+            // 确认任务没有超时，根据任务类型，正常处理任务结果
+            if (Status.SUCCESS.equals(status)) {
+                // 逻辑层面上任务成功，处理返回的任务数据包
+                if ("List".equals(taskType)) {
+                    // List任务可以生成子任务参数，任务类型包括三种：List、Detail、Data
+                    List<JSONObject> childTasks = getTasksFromString(taskObj, result);
+                    for (JSONObject childTask : childTasks) {
+                        Event event = new Event()
+                                .setPolicyId(policyId)
+                                .setTaskId(taskId)
+                                .setEntityType(taskType)
+                                .setTopic("TP_BDG_AD_Task_List")
+                                .setTask(childTask);
+                        eventProducer.fireEvent(event);
+                    }
+                } else if ("Detail".equals(taskType)) {
+                    // Detail任务用于下载页面，并打包成zip文件，Base64编码过后传递到服务端
                     Event event = new Event()
-                            .setPolicyId(taskObj.getString("policyId"))
-                            .setTaskId(taskObj.getString("taskId"))
-                            .setEntityType("List")
-                            .setTopic("TP_BDG_AD_Task_List")
-                            .setTask(childTask);
+                            .setPolicyId(policyId)
+                            .setTaskId(taskId)
+                            .setEntityType(taskType)
+                            .setTopic(String.format("TP_BDG_AD_%s_ORISTRUCT", policyId.toUpperCase(Locale.ROOT)))
+                            .setTask(taskObj)
+                            .setData(result);
                     eventProducer.fireEvent(event);
+                } else if ("Data".equals(taskType)) {
+                    // Data任务用于更新爬虫任务辅助表
                 }
-            } else if (Objects.equals(status, Status.FAIL)) {
-                // 任务处理失败
-                // 可以考虑将策略的失败任务存储起来，设置自动重试任务
-            } else if (Objects.equals(status, Status.None_State)) {
-                // 任务处理完成但不包含有效数据
+            } else if (Status.None_State.equals(status)) {
+                // 逻辑层面上任务为空包
+            } else if (Status.FAIL.equals(status)) {
+                // 逻辑层面上任务失败
             }
         } else {
-            // 修改任务状态为超时，丢弃任务结果
+            // 确认任务超时，修改任务状态，丢弃任务结果
             taskObj.put("status", Status.TIMEOUT);
         }
 
-
         // 处理完任务状态和任务结果以后
         taskObj.put("kibana_log", kibanaLog);
-        // 1、任务结果和日志推送到kafka
+        // 任务结果和日志推送到kafka
         Event event = new Event()
-                .setPolicyId(taskObj.getString("policyId"))
-                .setTaskId(taskObj.getString("taskId"))
-                .setEntityType(taskObj.getString("taskType"))
+                .setPolicyId(policyId)
+                .setTaskId(taskId)
+                .setEntityType(taskType)
                 .setTopic("TP_BDG_AD_COMPLETED_TASK")
                 .setTask(taskObj);
         eventProducer.fireEvent(event);
-        // 2、通过消费kafka消息将任务状态和日志发送到elasticsearch
-        // 3、设计实时任务状态监控，根据统计结果对策略进行报警
-        return "{\"status\":\"ok\"}";
-    }
-
-    @RequestMapping(path = "/uploadTaskData", method = RequestMethod.POST)
-    @ResponseBody
-    public String uploadTaskData(String task, Integer status, String data, @RequestParam("kibana_log") String kibanaLog) {
-        JSONObject taskObj = JSON.parseObject(task);
-        // 确认任务没有超时，正常处理任务结果
-        Boolean timeoutStatus = iTaskService.acknowledgeTask(taskObj);
-        if (timeoutStatus) {
-            Event event = new Event()
-                    .setPolicyId(taskObj.getString("policyId"))
-                    .setTaskId(taskObj.getString("taskId"))
-                    .setEntityType("Detail")
-                    .setTopic("TP_BDG_AD_HEIMAOTOUSU_ORISTRUCT")
-                    .setTask(taskObj)
-                    .setData(data);
-            eventProducer.fireEvent(event);
-        } else {
-            // 修改任务状态为超时，丢弃任务结果
-            taskObj.put("status", status);
-        }
+        // 2、设计实时任务状态监控，根据统计结果对策略进行报警
+        // 3、通过消费kafka消息将任务状态和日志发送到elasticsearch
         return "{\"status\":\"ok\"}";
     }
 
