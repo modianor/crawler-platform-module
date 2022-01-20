@@ -157,9 +157,9 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void acknowledgeTask(JSONObject task) {
+    public Boolean acknowledgeTask(JSONObject task) {
         String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
-        iTaskDao.removeTask(redisKey, task);
+        return iTaskDao.removeTask(redisKey, task);
     }
 
     @Override

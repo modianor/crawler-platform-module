@@ -27,7 +27,7 @@ public class EventConsumer {
             return;
         }
 
-        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        Event event = JSONObject.parseObject(record.value(), Event.class);
         if (event == null) {
             logger.error("消息格式错误!");
             return;
@@ -37,20 +37,20 @@ public class EventConsumer {
         logger.info("Kafka处理Event:" + event.toString());
     }
 
-    // 消费Detail任务数据
-    /*@KafkaListener(topics = {TOPIC_Detail})
-    public void handleDetailMessage(ConsumerRecord record) {
+    // 消费已完成的任务数据
+    @KafkaListener(topics = {"TP_BDG_AD_COMPLETED_TASK"})
+    public void handleDetailMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
             return;
         }
 
-        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        Event event = JSONObject.parseObject(record.value(), Event.class);
         if (event == null) {
             logger.error("消息格式错误!");
             return;
         }
-
-        logger.info("Kafka处理Event:" + event.toString().substring(0, 1000));
-    }*/
+        JSONObject task = event.getTask();
+        logger.info("Kafka处理Event:" + event);
+    }
 }

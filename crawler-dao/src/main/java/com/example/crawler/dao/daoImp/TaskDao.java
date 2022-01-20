@@ -84,7 +84,13 @@ public class TaskDao implements ITaskDao {
     }
 
     @Override
-    public void removeTask(String redisKey,JSONObject task) {
-        redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
+    public Boolean removeTask(String redisKey,JSONObject task) {
+        Long num = redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
+        if (num != null) {
+            return num > 0;
+        } else {
+            return false;
+        }
+
     }
 }

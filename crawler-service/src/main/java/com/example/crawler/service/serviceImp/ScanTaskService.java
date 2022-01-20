@@ -15,7 +15,7 @@ public class ScanTaskService {
     @Autowired
     private ITaskDao iTaskDao;
 
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
     public void progressTaskScan() {
         log.info("扫描正在处理等待爬虫端返回结果的任务...");
         List<JSONObject> tasks = iTaskDao.getProgressTasks();
@@ -24,10 +24,15 @@ public class ScanTaskService {
             int curTime = (int) (System.currentTimeMillis() / 1000);
             int deltaTime = curTime - inProgressTime;
             if (deltaTime > 60) {
-                iTaskDao.removeTask("CRAWLER_IN_PROGRESS_TASKS", task);
-                task.remove("in_progress_time");
-                iTaskDao.pushTask(task);
-                log.info(String.format("任务超时[%s]秒,重新进入任务队列 [%S]", deltaTime, task.toJSONString()));
+                Boolean status = iTaskDao.removeTask("CRAWLER_IN_PROGRESS_TASKS", task);
+                if (status) {
+                    // 扫描到任务已经超时并且成功将任务移除
+                    task.remove("in_progress_time");
+                    iTaskDao.pushTask(task);
+                    log.info(String.format("任务超时[%s]秒,重新进入任务队列 [%S]", deltaTime, task.toJSONString()));
+                } else {
+                    // 扫描到任务已经超时但是任务结果已经抢先确认任务结果 不做处理
+                }
             } else {
                 log.info(String.format("任务没有超时[%s]秒,继续等待任务结果", deltaTime));
             }
