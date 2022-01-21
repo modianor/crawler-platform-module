@@ -45,6 +45,7 @@ public class TaskController {
         String taskId = taskObj.getString("taskId");
 
         if (timeoutStatus) {
+            taskObj.put("status", status);
             // 确认任务没有超时，根据任务类型，正常处理任务结果
             if (Status.SUCCESS.equals(status)) {
                 // 逻辑层面上任务成功，处理返回的任务数据包

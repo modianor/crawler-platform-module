@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <!--日志写入logstash-->
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>hadoop102:4567</destination>
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+    　　<!--监控指定的日志类-->
+    　　
+    <logger name="com.example.crawler.event.LogStashUtil" level="INFO">　　
+        <appender-ref ref="logstash"/>
+    </logger>
+</configuration>
