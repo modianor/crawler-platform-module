@@ -82,6 +82,7 @@ public class TaskController {
         } else {
             // 确认任务超时，修改任务状态，丢弃任务结果
             taskObj.put("status", Status.TIMEOUT);
+            kibanaLog = "任务处理超时";
         }
 
         // 处理完任务状态和任务结果以后

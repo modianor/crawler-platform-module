@@ -2,7 +2,7 @@
 <configuration>
     <!--日志写入logstash-->
     <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>hadoop102:4567</destination>
+        <destination>hadoop102:5000</destination>
         <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
     　　<!--监控指定的日志类-->
@@ -10,4 +10,16 @@
     <logger name="com.example.crawler.event.LogStashUtil" level="INFO">　　
         <appender-ref ref="logstash"/>
     </logger>
+
+
+    <!--1. 输出到控制台-->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} [%line] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="stdout"/>
+    </root>
 </configuration>
