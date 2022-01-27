@@ -19,6 +19,8 @@ public class Event {
     private String entityType;
     // 事件包含的Task
     private JSONObject task;
+    // 事件包含Task的处理结果
+    private String result;
     // 事件包含的原始结构化数据
     private String data;
     // 事件包含的业务结构化数据
@@ -87,6 +89,15 @@ public class Event {
         return this;
     }
 
+    public String getResult() {
+        return result;
+    }
+
+    public Event setResult(String result) {
+        this.result = result;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
@@ -95,6 +106,7 @@ public class Event {
                 ", topic='" + topic + '\'' +
                 ", entityType='" + entityType + '\'' +
                 ", task=" + task +
+                ", result=" + result +
                 ", data='" + data + '\'' +
                 ", obj=" + obj +
                 '}';

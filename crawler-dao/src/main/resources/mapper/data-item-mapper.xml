@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.crawler.dao.IDataItemDao">
+    <insert id="insertTableData">
+        insert into `${tableName}`
+        <foreach item="value" index="key" collection="maps.entrySet()" open="(" separator="," close=")">
+            ${key}
+        </foreach>
+        values
+        <foreach item="value" index="key" collection="maps.entrySet()" open="(" separator="," close=");">
+            #{value}
+        </foreach>
+    </insert>
+
+    <update id="updateTableData">
+        update `${tableName}` set
+        <foreach item="value" index="key" collection="maps.entrySet()" open="" separator="," close="">
+            <if test="key != pkName">
+                ${key} = #{value}
+            </if>
+        </foreach>
+        WHERE
+        <foreach item="value" index="key" collection="maps.entrySet()" separator=",">
+            <if test="key == pkName">
+                `${pkName}` = #{value}
+            </if>
+        </foreach>
+    </update>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(*)
+        from `${tableName}`
+        where
+        <foreach item="value" index="key" collection="maps.entrySet()" separator=",">
+            <if test="key == pkName">
+                `${pkName}` = #{value}
+            </if>
+        </foreach>
+    </select>
+</mapper>
