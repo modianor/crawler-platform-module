@@ -5,6 +5,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.io.IOException;
 
+import static com.example.crawler.entity.Constant.*;
+
 public abstract class BasicStructurer {
     public String policyId = "";
 
@@ -20,11 +22,11 @@ public abstract class BasicStructurer {
     }
 
     public String getOriginStructureTopic() {
-        return String.format("TP_BDG_AD_%s_ORISTRUCT", this.policyId);
+        return String.format(TOPIC_ORI_TEMPLATE, this.policyId);
     }
 
     public String getBusinessStructureTopic() {
-        return String.format("TP_BDG_AD_%s_BISSTRUCT", this.policyId);
+        return String.format(TOPIC_BISS_TEMPLATE, this.policyId);
     }
 
 }

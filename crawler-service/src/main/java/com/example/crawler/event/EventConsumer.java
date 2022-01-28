@@ -10,12 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import static com.example.crawler.entity.Constant.*;
+
 @Component
 public class EventConsumer {
-    private static final String TOPIC_LIST = "TP_BDG_AD_Task_List";
-    private static final String TOPIC_DATA = "TP_BDG_AD_Task_Data";
-    private static final String TOPIC_Detail = "TP_BDG_AD_HEIMAOTOUSU_ORISTRUCT";
-    private static final String TOPIC_COMPLETED_TASK = "TP_BDG_AD_COMPLETED_TASK";
     private static final Logger logger = LoggerFactory.getLogger(EventConsumer.class);
 
     @Autowired

@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -32,6 +33,14 @@ public class RedisTest {
             String taskStr = (String) (taskObj);
             JSONObject task = JSON.parseObject(taskStr);
             taskObjs.add(task);
+        }
+    }
+
+    @Test
+    public void testGetKeys() {
+        Set<String> keys = redisTemplate.keys("*:Detail");
+        for (String key : keys) {
+            System.out.println(key);
         }
     }
 

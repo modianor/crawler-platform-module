@@ -73,13 +73,13 @@ public class TaskDao implements ITaskDao {
 
     @Override
     public void pushProgressTask(JSONObject task) {
-        String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
+        String policyId = task.getString("policyId");
+        String redisKey = String.format("%s:%s", policyId, "IN_PROGRESS_TASKS");
         redisTemplate.opsForList().rightPush(redisKey, task.toJSONString());
     }
 
     @Override
-    public List<JSONObject> getProgressTasks() {
-        String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
+    public List<JSONObject> getProgressTasks(String redisKey) {
         Long size = redisTemplate.opsForList().size(redisKey);
         List<JSONObject> tasks = new ArrayList<>();
         List<Object> taskObjs = redisTemplate.opsForList().range(redisKey, 0, size);
@@ -93,12 +93,16 @@ public class TaskDao implements ITaskDao {
 
     @Override
     public Boolean removeTask(String redisKey, JSONObject task) {
+        if (redisKey == null) {
+            String policyId = task.getString("policyId");
+            redisKey = String.format("%s:%s", policyId, "IN_PROGRESS_TASKS");
+        }
+
         Long num = redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
         if (num != null) {
             return num > 0;
         } else {
             return false;
         }
-
     }
 }

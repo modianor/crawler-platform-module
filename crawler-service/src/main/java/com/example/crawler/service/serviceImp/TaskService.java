@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.configs.ElasticSearchConfig;
 import com.example.crawler.dao.IDataItemDao;
 import com.example.crawler.dao.ITaskDao;
+import com.example.crawler.entity.Constant;
 import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Task;
 import com.example.crawler.event.EventProducer;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.example.crawler.entity.Constant.*;
 import static com.example.crawler.utils.TaskUtil.getTasksFromString;
 
 @Slf4j
@@ -80,7 +82,7 @@ public class TaskService implements ITaskService {
         String policyId = task.getString("policyId");
         //指定索引和id
         JSONObject obj = new JSONObject();
-        obj.put("taskSignature", taskMd5);
+        obj.put(TASK_SIGNATURE, taskMd5);
         IndexRequest request = new IndexRequest(policyId.toLowerCase(Locale.ROOT));
         request.source(obj.toJSONString(), XContentType.JSON);
         //执行保存操作
@@ -92,7 +94,6 @@ public class TaskService implements ITaskService {
             log.error("重复任务进入消重服务错误, {}", e.toString());
             return false;
         }
-        System.out.println(indexResponse);
         return true;
     }
 
@@ -106,7 +107,7 @@ public class TaskService implements ITaskService {
         //指定DSL，检索条件
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         //1.1 构造检索条件
-        searchSourceBuilder.query(QueryBuilders.termQuery("taskSignature", taskMd5));
+        searchSourceBuilder.query(QueryBuilders.termQuery(TASK_SIGNATURE, taskMd5));
         searchRequest.source(searchSourceBuilder);
         //2.执行检索
         try {
@@ -174,7 +175,8 @@ public class TaskService implements ITaskService {
 
     @Override
     public Boolean acknowledgeTask(JSONObject task) {
-        String redisKey = "CRAWLER_IN_PROGRESS_TASKS";
+        String policyId = task.getString("policyId");
+        String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
         return iTaskDao.removeTask(redisKey, task);
     }
 
@@ -184,7 +186,7 @@ public class TaskService implements ITaskService {
         for (String policyId : policyIds) {
             JSONObject task = iTaskDao.getTaskParam(policyId);
             if (task != null) {
-                task.put("in_progress_time", (int) (System.currentTimeMillis() / 1000));
+                task.put(TASK_KEY_IN_PROGRESS_TIME, (int) (System.currentTimeMillis() / 1000));
                 tasks.add(task);
                 iTaskDao.pushProgressTask(task);
             }
@@ -205,7 +207,7 @@ public class TaskService implements ITaskService {
                         .setPolicyId(policyId)
                         .setTaskId(taskId)
                         .setEntityType(taskType)
-                        .setTopic("TP_BDG_AD_Task_List")
+                        .setTopic(TOPIC_LIST)
                         .setTask(childTask);
                 eventProducer.fireEvent(event);
             }
@@ -215,7 +217,7 @@ public class TaskService implements ITaskService {
                     .setPolicyId(policyId)
                     .setTaskId(taskId)
                     .setEntityType(taskType)
-                    .setTopic(String.format("TP_BDG_AD_%s_ORISTRUCT", policyId.toUpperCase(Locale.ROOT)))
+                    .setTopic(String.format(TOPIC_ORI_TEMPLATE, policyId.toUpperCase(Locale.ROOT)))
                     .setTask(parentTask)
                     .setData(result);
             eventProducer.fireEvent(event);
@@ -230,7 +232,7 @@ public class TaskService implements ITaskService {
                         .setPolicyId(policyId)
                         .setTaskId(taskId)
                         .setEntityType(taskType)
-                        .setTopic("TP_BDG_AD_Task_Data")
+                        .setTopic(TOPIC_DATA)
                         .setTask(task);
                 eventProducer.fireEvent(event);
             }
@@ -261,7 +263,7 @@ public class TaskService implements ITaskService {
                 log.warn(String.format("Data Mapping数据已存在,不更新数据状态:%s", task.toJSONString()));
             }
         } else {
-            // 当前这条数据不存在
+            // 当前这条数据不存在,直接插入
             iDataItemDao.insertTableData(maps, pkName, tableName);
             log.info(String.format("Data Mapping数据不存在,直接更新或者插入数据状态:%s", task.toJSONString()));
         }
@@ -276,7 +278,7 @@ public class TaskService implements ITaskService {
                 .setPolicyId(policyId)
                 .setTaskId(taskId)
                 .setEntityType(taskType)
-                .setTopic("TP_BDG_AD_COMPLETED_TASK")
+                .setTopic(TOPIC_COMPLETED_TASK)
                 .setTask(taskObj);
         eventProducer.fireEvent(event);
     }
