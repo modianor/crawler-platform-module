@@ -3,8 +3,12 @@ package com.example.crawler.service.serviceImp;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.configs.ElasticSearchConfig;
+import com.example.crawler.dao.IDataItemDao;
 import com.example.crawler.dao.ITaskDao;
+import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Task;
+import com.example.crawler.event.EventProducer;
+import com.example.crawler.service.IPolicyService;
 import com.example.crawler.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
@@ -24,6 +28,9 @@ import org.springframework.util.DigestUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import static com.example.crawler.utils.TaskUtil.getTasksFromString;
 
 @Slf4j
 @Service
@@ -33,7 +40,16 @@ public class TaskService implements ITaskService {
     private ITaskDao iTaskDao;
 
     @Autowired
+    private IDataItemDao iDataItemDao;
+
+    @Autowired
+    private IPolicyService iPolicyService;
+
+    @Autowired
     private RestHighLevelClient restHighLevelClient;
+
+    @Autowired
+    private EventProducer eventProducer;
 
     @Override
     public Task pop_task(String spiderName) {
@@ -174,5 +190,94 @@ public class TaskService implements ITaskService {
             }
         }
         return tasks;
+    }
+
+    @Override
+    public void handleUploadTask(JSONObject parentTask, String result) {
+        String policyId = parentTask.getString("policyId");
+        String taskType = parentTask.getString("taskType");
+        String taskId = parentTask.getString("taskId");
+        if ("List".equals(taskType)) {
+            // List任务可以生成子任务参数，任务类型包括三种：List、Detail、Data
+            List<JSONObject> childTasks = getTasksFromString(parentTask, result);
+            for (JSONObject childTask : childTasks) {
+                Event event = new Event()
+                        .setPolicyId(policyId)
+                        .setTaskId(taskId)
+                        .setEntityType(taskType)
+                        .setTopic("TP_BDG_AD_Task_List")
+                        .setTask(childTask);
+                eventProducer.fireEvent(event);
+            }
+        } else if ("Detail".equals(taskType)) {
+            // Detail任务用于下载页面，并打包成zip文件，Base64编码过后传递到服务端
+            Event event = new Event()
+                    .setPolicyId(policyId)
+                    .setTaskId(taskId)
+                    .setEntityType(taskType)
+                    .setTopic(String.format("TP_BDG_AD_%s_ORISTRUCT", policyId.toUpperCase(Locale.ROOT)))
+                    .setTask(parentTask)
+                    .setData(result);
+            eventProducer.fireEvent(event);
+        } else if ("Data".equals(taskType)) {
+            // Data任务用于更新爬虫任务辅助表
+            List<JSONObject> tasks = getTasksFromString(parentTask, result);
+            JSONObject dataMapping = iPolicyService.getDataMappingByPolicyId(policyId);
+
+            for (JSONObject task : tasks) {
+                task.putAll(dataMapping);
+                Event event = new Event()
+                        .setPolicyId(policyId)
+                        .setTaskId(taskId)
+                        .setEntityType(taskType)
+                        .setTopic("TP_BDG_AD_Task_Data")
+                        .setTask(task);
+                eventProducer.fireEvent(event);
+            }
+        }
+    }
+
+    @Override
+    public void handleDataTask(JSONObject task) {
+        String tableName = task.getString("tableName");
+        String pkName = task.getString("pkName");
+        boolean update = task.getBoolean("update");
+
+        // 移除不必要的字段
+        task.remove("tableName");
+        task.remove("pkName");
+        task.remove("update");
+        task.remove("columnNames");
+
+        Map<String, Object> maps = task.getInnerMap();
+
+        int count = iDataItemDao.getCount(maps, pkName, tableName);
+        if (count > 0) {
+            // 当前这条数据已存在
+            if (update) {
+                iDataItemDao.updateTableData(maps, pkName, tableName);
+                log.info(String.format("Data Mapping数据已存在,更新数据状态:%s", task.toJSONString()));
+            } else {
+                log.warn(String.format("Data Mapping数据已存在,不更新数据状态:%s", task.toJSONString()));
+            }
+        } else {
+            // 当前这条数据不存在
+            iDataItemDao.insertTableData(maps, pkName, tableName);
+            log.info(String.format("Data Mapping数据不存在,直接更新或者插入数据状态:%s", task.toJSONString()));
+        }
+    }
+
+    @Override
+    public void pushCompletedTask(JSONObject taskObj) {
+        String policyId = taskObj.getString("policyId");
+        String taskType = taskObj.getString("taskType");
+        String taskId = taskObj.getString("taskId");
+        Event event = new Event()
+                .setPolicyId(policyId)
+                .setTaskId(taskId)
+                .setEntityType(taskType)
+                .setTopic("TP_BDG_AD_COMPLETED_TASK")
+                .setTask(taskObj);
+        eventProducer.fireEvent(event);
     }
 }

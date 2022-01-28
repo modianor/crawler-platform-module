@@ -1,5 +1,6 @@
 package com.example.crawler.service.serviceImp;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.dao.IPolicyDao;
 import com.example.crawler.entity.Policy;
 import com.example.crawler.service.IPolicyService;
@@ -49,5 +50,15 @@ public class PolicyService implements IPolicyService {
     @Override
     public void deletePolicyByPolicyId(String policyId) {
         iPolicyDao.deletePolicyByPolicyId(policyId);
+    }
+
+    @Override
+    public JSONObject getDataMappingByPolicyId(String policyId) {
+        JSONObject dataMapping = new JSONObject();
+        dataMapping.put("columnNames", "[\"code\"]");
+        dataMapping.put("pkName", "company");
+        dataMapping.put("tableName", "BDG_DATA_TEST");
+        dataMapping.put("update", true);
+        return dataMapping;
     }
 }

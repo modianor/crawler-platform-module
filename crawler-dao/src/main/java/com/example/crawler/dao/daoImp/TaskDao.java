@@ -47,17 +47,25 @@ public class TaskDao implements ITaskDao {
     public JSONObject getTaskParam(String policyId) {
         String redisListKey = policyId + ":List";
         String redisDetailKey = policyId + ":Detail";
-        Long detailTaskSize = redisTemplate.opsForList().size(redisDetailKey);
-        if (detailTaskSize != null && detailTaskSize > 0) {
-            String jsonStr = (String) redisTemplate.opsForList().leftPop(redisDetailKey);
+        String redisDataKey = policyId + ":Data";
+        Long dataTaskSize = redisTemplate.opsForList().size(redisDataKey);
+        if (dataTaskSize != null && dataTaskSize > 0) {
+            String jsonStr = (String) redisTemplate.opsForList().leftPop(redisDataKey);
             JSONObject task = JSON.parseObject(jsonStr);
             return task;
         } else {
-            Long listTaskSize = redisTemplate.opsForList().size(redisListKey);
-            if (listTaskSize != null && listTaskSize > 0) {
-                String jsonStr = (String) redisTemplate.opsForList().leftPop(redisListKey);
+            Long detailTaskSize = redisTemplate.opsForList().size(redisDetailKey);
+            if (detailTaskSize != null && detailTaskSize > 0) {
+                String jsonStr = (String) redisTemplate.opsForList().leftPop(redisDetailKey);
                 JSONObject task = JSON.parseObject(jsonStr);
                 return task;
+            } else {
+                Long listTaskSize = redisTemplate.opsForList().size(redisListKey);
+                if (listTaskSize != null && listTaskSize > 0) {
+                    String jsonStr = (String) redisTemplate.opsForList().leftPop(redisListKey);
+                    JSONObject task = JSON.parseObject(jsonStr);
+                    return task;
+                }
             }
         }
         return null;
@@ -84,7 +92,7 @@ public class TaskDao implements ITaskDao {
     }
 
     @Override
-    public Boolean removeTask(String redisKey,JSONObject task) {
+    public Boolean removeTask(String redisKey, JSONObject task) {
         Long num = redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
         if (num != null) {
             return num > 0;

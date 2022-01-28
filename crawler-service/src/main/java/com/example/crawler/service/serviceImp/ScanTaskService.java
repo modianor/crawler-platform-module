@@ -23,7 +23,7 @@ public class ScanTaskService {
             int inProgressTime = task.getInteger("in_progress_time");
             int curTime = (int) (System.currentTimeMillis() / 1000);
             int deltaTime = curTime - inProgressTime;
-            if (deltaTime > 60) {
+            if (deltaTime > 600) {
                 Boolean status = iTaskDao.removeTask("CRAWLER_IN_PROGRESS_TASKS", task);
                 if (status) {
                     // 扫描到任务已经超时并且成功将任务移除

@@ -2,6 +2,7 @@ package com.example.crawler.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Task;
 
 import java.io.IOException;
@@ -27,4 +28,10 @@ public interface ITaskService {
     JSONArray getTaskParams(List<String> policyIds);
 
     Boolean acknowledgeTask(JSONObject taskObj);
+
+    void handleUploadTask(JSONObject parentTask, String result);
+
+    void pushCompletedTask(JSONObject taskObj);
+
+    void handleDataTask(JSONObject task);
 }

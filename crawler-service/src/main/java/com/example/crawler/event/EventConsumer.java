@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventConsumer {
     private static final String TOPIC_LIST = "TP_BDG_AD_Task_List";
+    private static final String TOPIC_DATA = "TP_BDG_AD_Task_Data";
     private static final String TOPIC_Detail = "TP_BDG_AD_HEIMAOTOUSU_ORISTRUCT";
+    private static final String TOPIC_COMPLETED_TASK = "TP_BDG_AD_COMPLETED_TASK";
     private static final Logger logger = LoggerFactory.getLogger(EventConsumer.class);
 
     @Autowired
@@ -27,7 +29,7 @@ public class EventConsumer {
 
     // 消费List Data任务
     @KafkaListener(topics = {TOPIC_LIST})
-    public void handleListDataMessage(ConsumerRecord<String, String> record) {
+    public void handleListMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
             return;
@@ -43,8 +45,26 @@ public class EventConsumer {
         logger.info("Kafka处理Event:" + event.toString());
     }
 
+    // 消费List Data任务
+    @KafkaListener(topics = {TOPIC_DATA})
+    public void handleDataMessage(ConsumerRecord<String, String> record) {
+        if (record == null || record.value() == null) {
+            logger.error("消息的内容为空!");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value(), Event.class);
+        if (event == null) {
+            logger.error("消息格式错误!");
+            return;
+        }
+
+        iTaskService.handleDataTask(event.getTask());
+        logger.info("Kafka处理Event:" + event.toString());
+    }
+
     // 消费已完成的任务数据
-    @KafkaListener(topics = {"TP_BDG_AD_COMPLETED_TASK"})
+    @KafkaListener(topics = {TOPIC_COMPLETED_TASK})
     public void handleDetailMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");

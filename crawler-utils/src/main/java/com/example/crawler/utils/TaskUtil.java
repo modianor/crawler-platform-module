@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Task;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TaskUtil {
 
@@ -23,32 +21,44 @@ public class TaskUtil {
 
     public static List<JSONObject> getTasksFromString(JSONObject parentTask, String taskString) {
         List<JSONObject> tasks = new ArrayList<>();
-        String parentTaskId = "";
-        if (parentTask != null) {
-            parentTaskId = parentTask.getString("taskId");
-        }
+        String parentTaskType = parentTask.getString("taskType");
+        String parentTaskId = parentTask.getString("taskId");
+
         JSONArray taskParams = (JSONArray) JSON.parse(taskString);
-        for (int i = 0; i < taskParams.size(); i++) {
-            JSONArray params = taskParams.getJSONArray(i);
-            String urlSign = params.getString(0);
-            String companyName = params.getString(1);
-            String creditCode = params.getString(2);
-            String taskInfo = params.getString(3);
 
-            String[] policyIdAndTaskType = taskInfo.split("\\|");
-            String policyId = policyIdAndTaskType[0];
-            String taskType = policyIdAndTaskType[1];
+        if ("List".equals(parentTaskType)) {
+            for (int i = 0; i < taskParams.size(); i++) {
+                JSONArray params = taskParams.getJSONArray(i);
+                String urlSign = params.getString(0);
+                String companyName = params.getString(1);
+                String creditCode = params.getString(2);
+                String taskInfo = params.getString(3);
 
-            JSONObject task = new JSONObject();
-            task.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
-            task.put("parentTaskId", parentTaskId);
-            task.put("policyId", policyId);
-            task.put("taskType", taskType);
-            task.put("urlSign", urlSign);
-            task.put("companyName", companyName);
-            task.put("creditCode", creditCode);
-            tasks.add(task);
+                String[] policyIdAndTaskType = taskInfo.split("\\|");
+                String policyId = policyIdAndTaskType[0];
+                String taskType = policyIdAndTaskType[1];
+
+                JSONObject task = new JSONObject();
+                task.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
+                task.put("parentTaskId", parentTaskId);
+                task.put("policyId", policyId);
+                task.put("taskType", taskType);
+                task.put("urlSign", urlSign);
+                task.put("companyName", companyName);
+                task.put("creditCode", creditCode);
+                tasks.add(task);
+            }
+            return tasks;
+        } else if ("Data".equals(parentTaskType)) {
+            List<JSONObject> maps = new ArrayList<>();
+            for (int i = 0; i < taskParams.size(); i++) {
+                JSONObject params = (JSONObject) taskParams.get(i);
+                maps.add(params);
+            }
+            return maps;
         }
-        return tasks;
+        return null;
+
+
     }
 }

@@ -9,7 +9,6 @@
         <module>crawler-utils</module>
         <module>crawler-dao</module>
         <module>crawler-config</module>
-        <module>crawler-event</module>
         <module>crawler-controller</module>
         <module>crawler-structure</module>
         <module>crawler-test</module>
