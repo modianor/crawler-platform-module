@@ -18,10 +18,10 @@ import java.util.Map;
 @Slf4j
 @Component
 public class ORIHEIMAOTOUSU extends BasicStructurer {
-    @Autowired
-    private EventProducer eventProducer;
     public String oriTopic = "";
     public String bissTopic = "";
+    @Autowired
+    private EventProducer eventProducer;
 
     public ORIHEIMAOTOUSU() {
         this.policyId = "HEIMAOTOUSU";

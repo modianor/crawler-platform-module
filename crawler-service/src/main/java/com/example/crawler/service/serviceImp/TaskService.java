@@ -5,9 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.configs.ElasticSearchConfig;
 import com.example.crawler.dao.IDataItemDao;
 import com.example.crawler.dao.ITaskDao;
-import com.example.crawler.entity.Constant;
 import com.example.crawler.entity.Event;
-import com.example.crawler.entity.Task;
 import com.example.crawler.event.EventProducer;
 import com.example.crawler.service.IPolicyService;
 import com.example.crawler.service.ITaskService;
@@ -52,18 +50,6 @@ public class TaskService implements ITaskService {
 
     @Autowired
     private EventProducer eventProducer;
-
-    @Override
-    public Task pop_task(String spiderName) {
-        return iTaskDao.pop_task(spiderName);
-    }
-
-    @Override
-    public void pushTasks(List<JSONObject> tasks) {
-        for (JSONObject task : tasks) {
-            iTaskDao.pushTask(task);
-        }
-    }
 
     @Override
     public String getDeduplicationFields(JSONObject task) {

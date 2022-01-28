@@ -5,7 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskUtil {
 

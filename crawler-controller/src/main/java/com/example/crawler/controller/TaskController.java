@@ -3,9 +3,7 @@ package com.example.crawler.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Status;
-import com.example.crawler.entity.Task;
 import com.example.crawler.service.ITaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,12 +78,5 @@ public class TaskController {
         JSONObject task = JSON.parseObject(taskParam);
         iTaskService.pushTask(task, false);
         return "{\"status\":\"ok\"}";
-    }
-
-
-    @RequestMapping(path = "/getTask", method = RequestMethod.GET)
-    @ResponseBody
-    public Task getTask(@RequestParam("spider_name") String spiderName) {
-        return iTaskService.pop_task(spiderName);
     }
 }

@@ -61,7 +61,6 @@ public class Policy {
 
     /*public Policy() {
     }*/
-
     public Integer getId() {
         return id;
     }

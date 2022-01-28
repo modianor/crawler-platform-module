@@ -2,8 +2,8 @@ package com.example.crawler.dao.daoImp;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.example.crawler.entity.Task;
 import com.example.crawler.dao.ITaskDao;
+import com.example.crawler.entity.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.crawler.entity.Constant.*;
 
 @Slf4j
 @Repository
@@ -45,9 +47,9 @@ public class TaskDao implements ITaskDao {
 
     @Override
     public JSONObject getTaskParam(String policyId) {
-        String redisListKey = policyId + ":List";
-        String redisDetailKey = policyId + ":Detail";
-        String redisDataKey = policyId + ":Data";
+        String redisListKey = policyId + ":" + REDIS_KEY_LIST_TASK;
+        String redisDetailKey = policyId + ":" + REDIS_KEY_DETAIL_TASK;
+        String redisDataKey = policyId + ":" + REDIS_KEY_DATA_TASK;
         Long dataTaskSize = redisTemplate.opsForList().size(redisDataKey);
         if (dataTaskSize != null && dataTaskSize > 0) {
             String jsonStr = (String) redisTemplate.opsForList().leftPop(redisDataKey);
@@ -74,7 +76,7 @@ public class TaskDao implements ITaskDao {
     @Override
     public void pushProgressTask(JSONObject task) {
         String policyId = task.getString("policyId");
-        String redisKey = String.format("%s:%s", policyId, "IN_PROGRESS_TASKS");
+        String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
         redisTemplate.opsForList().rightPush(redisKey, task.toJSONString());
     }
 
@@ -95,7 +97,7 @@ public class TaskDao implements ITaskDao {
     public Boolean removeTask(String redisKey, JSONObject task) {
         if (redisKey == null) {
             String policyId = task.getString("policyId");
-            redisKey = String.format("%s:%s", policyId, "IN_PROGRESS_TASKS");
+            redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
         }
 
         Long num = redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());

@@ -1,11 +1,11 @@
 package com.example.crawlerstructure.structurer;
 
-import com.example.crawler.entity.Event;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.io.IOException;
 
-import static com.example.crawler.entity.Constant.*;
+import static com.example.crawler.entity.Constant.TOPIC_BIS_TEMPLATE;
+import static com.example.crawler.entity.Constant.TOPIC_ORI_TEMPLATE;
 
 public abstract class BasicStructurer {
     public String policyId = "";
@@ -26,7 +26,7 @@ public abstract class BasicStructurer {
     }
 
     public String getBusinessStructureTopic() {
-        return String.format(TOPIC_BISS_TEMPLATE, this.policyId);
+        return String.format(TOPIC_BIS_TEMPLATE, this.policyId);
     }
 
 }
