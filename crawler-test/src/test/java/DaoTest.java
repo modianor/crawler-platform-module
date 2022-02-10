@@ -8,6 +8,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
@@ -20,12 +21,14 @@ public class DaoTest {
 
     @Test
     public void testInsert() {
-        String tableName = "BDG_DATA_TEST";
-        String pkName = "company";
+        String tableName = "BDG_DATA_HEIMAOTOUSU_COMPANY";
+        String pkName = "uid";
         boolean update = true;
         Map<String, Object> maps = new HashMap<>();
-        maps.put("company", "锤子科技2");
-        maps.put("age", 12);
+        maps.put("id", null);
+        maps.put("uid", "2026014915");
+        maps.put("title", "支付宝");
+        maps.put("url", "https://tousu.sina.com.cn/company/view/?couid=1644100824");
         int count = iDataItemDao.getCount(maps, pkName, tableName);
         if (count > 0) {
             // 已存在
@@ -36,6 +39,28 @@ public class DaoTest {
             // 不存在
             iDataItemDao.insertTableData(maps, pkName, tableName);
         }
+        System.out.println(maps.get("id"));
     }
 
+    @Test
+    public void testFetchData() {
+        String sql = "select id,\n" +
+                "       CONCAT(\n" +
+                "               '{\"companyName\":\"{',\n" +
+                "               '\\\\\"uid\\\\\"', ':', '\\\\\"', uid, '\\\\\",',\n" +
+                "               '\\\\\"title\\\\\"', ':', '\\\\\"', title, '\\\\\"',\n" +
+                "               '}\",\"creditCode\":\"\",\"urlSign\":\"\"}') Params,\n" +
+                "       1                                           Progress,\n" +
+                "       'HEIMAOTOUSU'                               PolicyId,\n" +
+                "       4                                           LoadOrder\n" +
+                "from BDG_DATA_HEIMAOTOUSU_COMPANY\n" +
+                "where id > 0\n" +
+                "order by id\n" +
+                "limit 100;";
+        List<Map<String, Object>> items = iDataItemDao.fetchData(sql);
+        for (Map<String, Object> item : items) {
+            System.out.println(item.entrySet());
+        }
+
+    }
 }

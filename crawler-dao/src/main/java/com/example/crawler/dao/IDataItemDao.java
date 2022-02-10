@@ -4,6 +4,7 @@ package com.example.crawler.dao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Map;
 
 @Mapper
@@ -13,4 +14,6 @@ public interface IDataItemDao {
     int getCount(@Param("maps") Map<String, Object> maps, @Param("pkName") String pkName, @Param("tableName") String tableName);
 
     int updateTableData(@Param("maps") Map<String, Object> maps, @Param("pkName") String pkName, @Param("tableName") String tableName);
+
+    List<Map<String, Object>> fetchData(@Param("paramSQL") String sql);
 }

@@ -1,6 +1,7 @@
 package com.example.crawler.event;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.crawler.entity.Constant;
 import com.example.crawler.entity.Event;
 import com.example.crawler.service.ITaskService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -25,8 +26,8 @@ public class EventConsumer {
     @Autowired
     private LogStashUtil logStashUtil;
 
-    // 消费List Data任务
-    @KafkaListener(topics = {TOPIC_LIST})
+    // 消费List任务
+    @KafkaListener(topics = {TOPIC_TASK_LIST})
     public void handleListMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
@@ -43,8 +44,8 @@ public class EventConsumer {
         logger.info("Kafka处理Event:" + event.toString());
     }
 
-    // 消费List Data任务
-    @KafkaListener(topics = {TOPIC_DATA})
+    // 消费Data任务
+    @KafkaListener(topics = {TOPIC_TASK_DATA})
     public void handleDataMessage(ConsumerRecord<String, String> record) {
         if (record == null || record.value() == null) {
             logger.error("消息的内容为空!");
@@ -58,6 +59,28 @@ public class EventConsumer {
         }
 
         iTaskService.handleDataTask(event.getTask());
+        logger.info("Kafka处理Event:" + event.toString());
+    }
+
+    // 消费Fail任务
+    @KafkaListener(topics = {TOPIC_TASK_FAIL})
+    public void handleFailMessage(ConsumerRecord<String, String> record) {
+        if (record == null || record.value() == null) {
+            logger.error("消息的内容为空!");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value(), Event.class);
+        if (event == null) {
+            logger.error("消息格式错误!");
+            return;
+        }
+
+        // 失败任务插入到对应策略下的FAIL列表中,可以配置重试任务
+        JSONObject task = event.getTask();
+        String policyId = task.getString("policyId");
+        String redisKey = String.format("%s:%s", policyId, REDIS_KEY_FAIL_TASK);
+        iTaskService.pushTask(redisKey, event.getTask());
         logger.info("Kafka处理Event:" + event.toString());
     }
 

@@ -146,17 +146,21 @@ public class TaskService implements ITaskService {
         if (duplication) {
             // 爬虫端生成子任务，需要进入消重流程
             if (!exist) {
-                iTaskDao.pushTask(task);
+                iTaskDao.pushTask(null, task);
                 log.info(String.format("爬虫子任务不需要消重:[%s]", task.toJSONString()));
             } else {
                 log.warn(String.format("爬虫子任务已被消重:[%s]", task.toJSONString()));
             }
         } else {
             // 任务来源程序生成任务，不需要进行消重
-            iTaskDao.pushTask(task);
+            iTaskDao.pushTask(null, task);
             log.info(String.format("任务来源程序生成任务，不需要消重:[%s]", task.toJSONString()));
         }
+    }
 
+    @Override
+    public void pushTask(String redisKey, JSONObject task) {
+        iTaskDao.pushTask(redisKey, task);
     }
 
     @Override
@@ -193,7 +197,7 @@ public class TaskService implements ITaskService {
                         .setPolicyId(policyId)
                         .setTaskId(taskId)
                         .setEntityType(taskType)
-                        .setTopic(TOPIC_LIST)
+                        .setTopic(TOPIC_TASK_LIST)
                         .setTask(childTask);
                 eventProducer.fireEvent(event);
             }
@@ -218,7 +222,7 @@ public class TaskService implements ITaskService {
                         .setPolicyId(policyId)
                         .setTaskId(taskId)
                         .setEntityType(taskType)
-                        .setTopic(TOPIC_DATA)
+                        .setTopic(TOPIC_TASK_DATA)
                         .setTask(task);
                 eventProducer.fireEvent(event);
             }
@@ -243,14 +247,22 @@ public class TaskService implements ITaskService {
         if (count > 0) {
             // 当前这条数据已存在
             if (update) {
-                iDataItemDao.updateTableData(maps, pkName, tableName);
+                try {
+                    iDataItemDao.updateTableData(maps, pkName, tableName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 log.info(String.format("Data Mapping数据已存在,更新数据状态:%s", task.toJSONString()));
             } else {
                 log.warn(String.format("Data Mapping数据已存在,不更新数据状态:%s", task.toJSONString()));
             }
         } else {
             // 当前这条数据不存在,直接插入
-            iDataItemDao.insertTableData(maps, pkName, tableName);
+            try {
+                iDataItemDao.insertTableData(maps, pkName, tableName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             log.info(String.format("Data Mapping数据不存在,直接更新或者插入数据状态:%s", task.toJSONString()));
         }
     }
@@ -265,6 +277,20 @@ public class TaskService implements ITaskService {
                 .setTaskId(taskId)
                 .setEntityType(taskType)
                 .setTopic(TOPIC_COMPLETED_TASK)
+                .setTask(taskObj);
+        eventProducer.fireEvent(event);
+    }
+
+    @Override
+    public void pushFailTask(JSONObject taskObj) {
+        String policyId = taskObj.getString("policyId");
+        String taskType = taskObj.getString("taskType");
+        String taskId = taskObj.getString("taskId");
+        Event event = new Event()
+                .setPolicyId(policyId)
+                .setTaskId(taskId)
+                .setEntityType(taskType)
+                .setTopic(TOPIC_TASK_FAIL)
                 .setTask(taskObj);
         eventProducer.fireEvent(event);
     }

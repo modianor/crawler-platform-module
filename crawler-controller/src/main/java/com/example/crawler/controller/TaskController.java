@@ -41,6 +41,7 @@ public class TaskController {
                 // 逻辑层面上任务为空包
             } else if (Status.FAIL.equals(status)) {
                 // 逻辑层面上任务失败
+                iTaskService.pushFailTask(taskObj);
             }
         } else {
             // 确认任务超时，修改任务状态，丢弃任务结果

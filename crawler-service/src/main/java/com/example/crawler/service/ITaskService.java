@@ -8,6 +8,8 @@ import java.util.List;
 public interface ITaskService {
     void pushTask(JSONObject task, Boolean duplication);
 
+    void pushTask(String redisKey, JSONObject task);
+
     Boolean doDeduplication(JSONObject task);
 
     Boolean isTurnOnDeduplication(JSONObject task);
@@ -27,4 +29,6 @@ public interface ITaskService {
     void pushCompletedTask(JSONObject taskObj);
 
     void handleDataTask(JSONObject task);
+
+    void pushFailTask(JSONObject taskObj);
 }

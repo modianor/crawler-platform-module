@@ -56,8 +56,8 @@ public class PolicyService implements IPolicyService {
     public JSONObject getDataMappingByPolicyId(String policyId) {
         JSONObject dataMapping = new JSONObject();
         dataMapping.put("columnNames", "[\"code\"]");
-        dataMapping.put("pkName", "company");
-        dataMapping.put("tableName", "BDG_DATA_TEST");
+        dataMapping.put("pkName", "uid");
+        dataMapping.put("tableName", "BDG_DATA_HEIMAOTOUSU_COMPANY");
         dataMapping.put("update", true);
         return dataMapping;
     }

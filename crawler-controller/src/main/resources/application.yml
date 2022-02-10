@@ -7,7 +7,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: "root"
-    password: "2482510236"
+    password: "123456"
     url: jdbc:mysql://localhost:3306/crawler-platform?serverTimezone=GMT%2B8&charset=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
 
 
@@ -32,7 +32,7 @@ server:
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.example.crawlerserver.entity
+  type-aliases-package: com.example.crawler.entity
   configuration:
     use-generated-keys: true
     map-underscore-to-camel-case: true
