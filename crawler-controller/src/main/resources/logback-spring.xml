@@ -2,7 +2,7 @@
 <configuration>
     <!--日志写入logstash-->
     <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>hadoop102:5000</destination>
+        <destination>hadoop102:4567</destination>
         <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
     　　<!--监控指定的日志类-->

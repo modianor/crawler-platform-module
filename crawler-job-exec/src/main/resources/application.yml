@@ -1,13 +1,55 @@
+# log config
+logging:
+  config: classpath:logback.xml
+
+
 spring:
+  redis:
+    host: hadoop102
+    port: 6379
+    database: 0
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: "root"
-    password: "123456"
+    password: "2482510236"
     url: jdbc:mysql://localhost:3306/crawler-platform?serverTimezone=GMT%2B8&charset=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
 
+  kafka:
+    bootstrap-servers: hadoop102:9092
+    consumer:
+      group-id: community-consumer-group
+      enable-auto-commit: true
+      auto-commit-interval: 3000
+    producer:
+      retries: 0
+      acks: 1
+      batch-size: 16384
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.example.crawler.entity
   configuration:
     use-generated-keys: true
     map-underscore-to-camel-case: true
+
+
+# web port
+server:
+  port: 8081
+
+
+# xxl-job admin address list
+xxl:
+  job:
+    accessToken:
+    admin:
+      addresses: http://127.0.0.1:8080/xxl-job-admin
+    executor:
+      address:
+      ip:
+      port: 9999
+      appname: crawler-job-executor
+      logpath: data/applogs/xxl-job/jobhandler
+      logretentiondays: 30
+
+

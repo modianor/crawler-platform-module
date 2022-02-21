@@ -7,7 +7,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: "root"
-    password: "123456"
+    password: "2482510236"
     url: jdbc:mysql://localhost:3306/crawler-platform?serverTimezone=GMT%2B8&charset=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
 
 

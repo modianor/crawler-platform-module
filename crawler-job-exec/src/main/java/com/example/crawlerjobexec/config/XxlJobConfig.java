@@ -1,4 +1,4 @@
-package com.example.crawler.configs;
+package com.example.crawlerjobexec.config;
 
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import org.slf4j.Logger;
