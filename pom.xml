@@ -12,6 +12,7 @@
         <module>crawler-controller</module>
         <module>crawler-structure</module>
         <module>crawler-test</module>
+        <module>crawler-job-exec</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
