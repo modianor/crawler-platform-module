@@ -10,6 +10,8 @@ public interface ITaskService {
 
     void pushTask(String redisKey, JSONObject task);
 
+    void pushBatchTasks(List<JSONObject> tasks);
+
     Boolean doDeduplication(JSONObject task);
 
     Boolean isTurnOnDeduplication(JSONObject task);

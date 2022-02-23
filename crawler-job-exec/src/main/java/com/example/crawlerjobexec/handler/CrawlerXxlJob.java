@@ -1,5 +1,6 @@
 package com.example.crawlerjobexec.handler;
 
+import cn.hutool.http.HttpUtil;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import org.slf4j.Logger;
@@ -27,7 +28,9 @@ public class CrawlerXxlJob {
     @XxlJob("demoJobHandler")
     public void demoJobHandler() throws Exception {
         XxlJobHelper.log("XXL-JOB, Hello World.");
-        String sql = XxlJobHelper.getJobParam();
+        String json = "[{\"id\":1,\"Params\":\"{\\\"companyName\\\":\\\"{\\\\\\\"uid\\\\\\\":\\\\\\\"1644100824\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"支付宝\\\\\\\"}\\\",\\\"creditCode\\\":\\\"\\\",\\\"urlSign\\\":\\\"\\\"}\",\"Progress\":1,\"TaskType\":\"HEIMAOTOUSU\",\"PolicyId\":\"List\",\"LoadOrder\":4},{\"id\":2,\"Params\":\"{\\\"companyName\\\":\\\"{\\\\\\\"uid\\\\\\\":\\\\\\\"2673619603\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"蜻蜓FM\\\\\\\"}\\\",\\\"creditCode\\\":\\\"\\\",\\\"urlSign\\\":\\\"\\\"}\",\"Progress\":1,\"TaskType\":\"HEIMAOTOUSU\",\"PolicyId\":\"List\",\"LoadOrder\":4}]";
+        String message = HttpUtil.post("http://127.0.0.1:6048/task/generateTaskSourceParams", json);
+        System.out.println(message);
     }
 
 

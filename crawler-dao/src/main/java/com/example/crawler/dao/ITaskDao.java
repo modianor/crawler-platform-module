@@ -8,6 +8,8 @@ import java.util.List;
 public interface ITaskDao {
     void pushTask(String redisKey, JSONObject task);
 
+    void pushBatchTask(String redisKey, String[] tasks);
+
     JSONObject getTaskParam(String policyId);
 
     void pushProgressTask(JSONObject task);

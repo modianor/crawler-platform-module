@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
+import static com.example.crawler.utils.TaskUtil.getTasksFromString;
+
 @Controller
 @RequestMapping("/task")
 public class TaskController {
@@ -78,6 +80,14 @@ public class TaskController {
     public String generateTaskSourceParam(String taskParam) {
         JSONObject task = JSON.parseObject(taskParam);
         iTaskService.pushTask(task, false);
+        return "{\"status\":\"ok\"}";
+    }
+
+    @RequestMapping(path = "/generateTaskSourceParams", method = RequestMethod.POST)
+    @ResponseBody
+    public String generateTaskSourceParams(String taskParams) {
+        List<JSONObject> tasks = getTasksFromString(taskParams);
+        iTaskService.pushBatchTasks(tasks);
         return "{\"status\":\"ok\"}";
     }
 }

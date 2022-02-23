@@ -26,8 +26,12 @@ public class TaskDao implements ITaskDao {
             String taskType = task.getString("taskType");
             redisKey = policyId + ":" + taskType;
         }
-
         redisTemplate.opsForList().leftPush(redisKey, task.toJSONString());
+    }
+
+    @Override
+    public void pushBatchTask(String redisKey, String[] tasks) {
+        redisTemplate.opsForList().leftPushAll(redisKey, tasks);
     }
 
     @Override

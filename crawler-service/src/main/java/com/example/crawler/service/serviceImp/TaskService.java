@@ -164,6 +164,25 @@ public class TaskService implements ITaskService {
     }
 
     @Override
+    public void pushBatchTasks(List<JSONObject> tasks) {
+        String redisKey = "";
+        for (int i = 0; i < tasks.size(); i++) {
+            JSONObject task = tasks.get(i);
+            String policyId = task.getString("policyId");
+            String taskType = task.getString("taskType");
+            redisKey = policyId + ":" + taskType;
+            break;
+        }
+
+        String[] objs = new String[tasks.size()];
+        for (int i = 0; i < tasks.size(); i++) {
+            objs[i] = tasks.get(i).toJSONString();
+        }
+
+        iTaskDao.pushBatchTask(redisKey, objs);
+    }
+
+    @Override
     public Boolean acknowledgeTask(JSONObject task) {
         String policyId = task.getString("policyId");
         String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);

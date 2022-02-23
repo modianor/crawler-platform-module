@@ -20,6 +20,12 @@ public class TaskUtil {
         return JSON.parseObject(task_json, Task.class);
     }
 
+    /***
+     * 根据爬虫任务返回的结果生成子任务
+     * @param parentTask 已被处理完的任务
+     * @param taskString 已被处理完的任务的结果
+     * @return 已被处理完的任务生成的子任务
+     */
     public static List<JSONObject> getTasksFromString(JSONObject parentTask, String taskString) {
         List<JSONObject> tasks = new ArrayList<>();
         String parentTaskType = parentTask.getString("taskType");
@@ -61,5 +67,25 @@ public class TaskUtil {
         return null;
 
 
+    }
+
+    public static List<JSONObject> getTasksFromString(String taskString) {
+        List<JSONObject> taskObjs = new ArrayList<>();
+        JSONArray taskOriginParams = (JSONArray) JSONArray.parse(taskString);
+        for (int i = 0; i < taskOriginParams.size(); i++) {
+            JSONObject taskParams = (JSONObject) taskOriginParams.get(i);
+            String params = taskParams.getString("Params");
+            JSONObject obj = JSONObject.parseObject(params);
+            String progress = taskParams.getString("Progress");
+            String policyId = taskParams.getString("PolicyId");
+            String loadOrder = taskParams.getString("LoadOrder");
+            String taskType = taskParams.getString("TaskType");
+            obj.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
+            obj.put("parentTaskId", null);
+            obj.put("policyId", policyId);
+            obj.put("taskType", taskType);
+            taskObjs.add(obj);
+        }
+        return taskObjs;
     }
 }
