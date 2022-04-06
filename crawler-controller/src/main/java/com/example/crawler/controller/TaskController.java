@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.entity.Status;
 import com.example.crawler.service.ITaskService;
+import com.example.crawler.utils.TaskUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,8 @@ public class TaskController {
     @ResponseBody
     public String generateTaskSourceParam(String taskParam) {
         JSONObject task = JSON.parseObject(taskParam);
+        // 为任务来源生成的任务添加taskID
+        TaskUtil.generatorTaskId(task);
         iTaskService.pushTask(task, false);
         return "{\"status\":\"ok\"}";
     }

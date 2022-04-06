@@ -6,6 +6,7 @@ import com.example.crawler.configs.ElasticSearchConfig;
 import com.example.crawler.dao.IDataItemDao;
 import com.example.crawler.dao.ITaskDao;
 import com.example.crawler.entity.Event;
+import com.example.crawler.entity.Policy;
 import com.example.crawler.event.EventProducer;
 import com.example.crawler.service.IPolicyService;
 import com.example.crawler.service.ITaskService;
@@ -141,9 +142,9 @@ public class TaskService implements ITaskService {
 
     @Override
     public void pushTask(JSONObject task, Boolean duplication) {
-        // 根据消重结果判断是否进入爬虫任务队列
-        Boolean exist = doDeduplication(task);
         if (duplication) {
+            // 根据消重结果判断是否进入爬虫任务队列
+            Boolean exist = doDeduplication(task);
             // 爬虫端生成子任务，需要进入消重流程
             if (!exist) {
                 iTaskDao.pushTask(null, task);
@@ -208,6 +209,13 @@ public class TaskService implements ITaskService {
         String policyId = parentTask.getString("policyId");
         String taskType = parentTask.getString("taskType");
         String taskId = parentTask.getString("taskId");
+
+        // 这里需要判断爬虫策略的工作模式
+        Policy policy = iPolicyService.getPolicyByPolicyId(policyId);
+        // 策略模式：plugin（通用插件爬虫）
+
+        // 策略模式：config（通用配置爬虫）
+
         if ("List".equals(taskType)) {
             // List任务可以生成子任务参数，任务类型包括三种：List、Detail、Data
             List<JSONObject> childTasks = getTasksFromString(parentTask, result);

@@ -88,4 +88,16 @@ public class TaskUtil {
         }
         return taskObjs;
     }
+
+    public static void generatorTaskId(JSONObject task) {
+        boolean containsKey = task.containsKey("taskId");
+        if (!containsKey) {
+            task.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
+        } else {
+            Long taskId = task.getLong("taskId");
+            if (taskId == 0) {
+                task.put("taskId", Long.toString(snowflakeIdWorker.nextId()));
+            }
+        }
+    }
 }
