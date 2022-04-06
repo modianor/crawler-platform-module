@@ -9,7 +9,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.crawler.entity.Constant.*;
 
@@ -65,36 +67,33 @@ public class TaskDao implements ITaskDao {
     @Override
     public void pushProgressTask(JSONObject task) {
         String policyId = task.getString("policyId");
+        String taskId = task.getString("taskId");
         String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
-        redisTemplate.opsForList().rightPush(redisKey, task.toJSONString());
+        redisTemplate.opsForHash().put(redisKey, taskId, task.toJSONString());
     }
 
     @Override
-    public List<JSONObject> getProgressTasks(String redisKey) {
-        Long size = redisTemplate.opsForList().size(redisKey);
-        List<JSONObject> tasks = new ArrayList<>();
-        List<Object> taskObjs = redisTemplate.opsForList().range(redisKey, 0, size);
-        for (Object taskObj : taskObjs) {
-            String taskJsonStr = (String) taskObj;
-            JSONObject task = JSON.parseObject(taskJsonStr);
-            tasks.add(task);
+    public Map<String, JSONObject> getProgressTasks(String redisKey) {
+        Long size = redisTemplate.opsForHash().size(redisKey);
+        Map<String, JSONObject> tasks = new HashMap<>();
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(redisKey);
+        for (Object key : entries.keySet()) {
+            String value = (String) entries.get(key);
+            JSONObject task = JSONObject.parseObject(value);
+            tasks.put((String) key, task);
         }
         return tasks;
     }
 
     @Override
-    public Boolean removeTask(String redisKey, JSONObject task) {
+    public Boolean removeProgessTask(String redisKey, JSONObject task) {
         if (redisKey == null) {
             String policyId = task.getString("policyId");
             String taskType = task.getString("taskType");
             redisKey = String.format("%s:%s", policyId, taskType);
         }
-
-        Long num = redisTemplate.opsForList().remove(redisKey, 0, task.toJSONString());
-        if (num != null) {
-            return num > 0;
-        } else {
-            return false;
-        }
+        String taskId = task.getString("taskId");
+        Long num = redisTemplate.opsForHash().delete(redisKey, taskId);
+        return num > 0;
     }
 }

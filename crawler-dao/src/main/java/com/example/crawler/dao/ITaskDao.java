@@ -4,6 +4,7 @@ package com.example.crawler.dao;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ITaskDao {
     void pushTask(String redisKey, JSONObject task);
@@ -14,7 +15,7 @@ public interface ITaskDao {
 
     void pushProgressTask(JSONObject task);
 
-    List<JSONObject> getProgressTasks(String redisKey);
+    Map<String,JSONObject> getProgressTasks(String redisKey);
 
-    Boolean removeTask(String redisKey, JSONObject task);
+    Boolean removeProgessTask(String redisKey, JSONObject task);
 }

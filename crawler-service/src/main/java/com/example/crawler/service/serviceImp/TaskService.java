@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.crawler.configs.ElasticSearchConfig;
 import com.example.crawler.dao.IDataItemDao;
+import com.example.crawler.dao.IPolicyConfigDao;
+import com.example.crawler.dao.IPolicyExtensionDao;
 import com.example.crawler.dao.ITaskDao;
 import com.example.crawler.entity.Event;
 import com.example.crawler.entity.Policy;
+import com.example.crawler.entity.PolicyExtension;
 import com.example.crawler.event.EventProducer;
 import com.example.crawler.service.IPolicyService;
 import com.example.crawler.service.ITaskService;
@@ -44,6 +47,12 @@ public class TaskService implements ITaskService {
     private IDataItemDao iDataItemDao;
 
     @Autowired
+    private IPolicyExtensionDao iPolicyExtensionDao;
+
+    @Autowired
+    private IPolicyConfigDao iPolicyConfigDao;
+
+    @Autowired
     private IPolicyService iPolicyService;
 
     @Autowired
@@ -54,7 +63,8 @@ public class TaskService implements ITaskService {
 
     @Override
     public String getDeduplicationFields(JSONObject task) {
-        return "urlSign";
+        // return "urlSign";
+        return "None";
     }
 
     @Override
@@ -187,7 +197,7 @@ public class TaskService implements ITaskService {
     public Boolean acknowledgeTask(JSONObject task) {
         String policyId = task.getString("policyId");
         String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
-        return iTaskDao.removeTask(redisKey, task);
+        return iTaskDao.removeProgessTask(redisKey, task);
     }
 
     @Override
@@ -213,13 +223,17 @@ public class TaskService implements ITaskService {
         // 这里需要判断爬虫策略的工作模式
         Policy policy = iPolicyService.getPolicyByPolicyId(policyId);
         // 策略模式：plugin（通用插件爬虫）
-
-        // 策略模式：config（通用配置爬虫）
+        PolicyExtension extension = iPolicyExtensionDao.getPolicyExtensionByPolicyId(policyId);
+        String policyMode = extension.getPolicyMode();
 
         if ("List".equals(taskType)) {
             // List任务可以生成子任务参数，任务类型包括三种：List、Detail、Data
             List<JSONObject> childTasks = getTasksFromString(parentTask, result);
             for (JSONObject childTask : childTasks) {
+                if ("config".equals(policyMode)) {
+                    // 策略工作模式为通用配置爬虫，需要将companyName字段添加具体的通用配置
+                    childTask.put("companyName", parentTask.getString("companyName"));
+                }
                 Event event = new Event()
                         .setPolicyId(policyId)
                         .setTaskId(taskId)

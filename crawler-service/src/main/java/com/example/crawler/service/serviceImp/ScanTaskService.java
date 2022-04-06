@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.example.crawler.entity.Constant.REDIS_KEY_IN_PROGRESS_TASK;
@@ -32,8 +33,11 @@ public class ScanTaskService {
         log.info("扫描正在处理等待爬虫端返回结果的任务...");
         Set<String> keys = redisTemplate.keys(String.format("*:%s", REDIS_KEY_IN_PROGRESS_TASK));
         for (String redisKey : keys) {
-            List<JSONObject> tasks = iTaskDao.getProgressTasks(redisKey);
-            for (JSONObject task : tasks) {
+            Map<String, JSONObject> tasks = iTaskDao.getProgressTasks(redisKey);
+            Set<Map.Entry<String, JSONObject>> entries = tasks.entrySet();
+            for (Map.Entry<String, JSONObject> entry : entries) {
+                String taskId = entry.getKey();
+                JSONObject task = entry.getValue();
                 int inProgressTime = task.getInteger(TASK_KEY_IN_PROGRESS_TIME);
                 int curTime = (int) (System.currentTimeMillis() / 1000);
                 int deltaTime = curTime - inProgressTime;

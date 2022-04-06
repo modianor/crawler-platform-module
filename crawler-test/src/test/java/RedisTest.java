@@ -20,8 +20,6 @@ import java.util.Set;
 public class RedisTest {
 
     @Autowired
-    private ITaskDao iTaskDao;
-    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     @Test
@@ -42,6 +40,12 @@ public class RedisTest {
         for (String key : keys) {
             System.out.println(key);
         }
+    }
+
+    @Test
+    public void testGetHash() {
+        List<Object> values = redisTemplate.opsForHash().values("NORMAL:IN_PROGRESS_TASKS");
+        System.out.println(values);
     }
 
 }
