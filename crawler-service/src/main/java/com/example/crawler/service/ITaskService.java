@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import java.util.List;
 
 public interface ITaskService {
-    void pushTask(JSONObject task, Boolean duplication);
+    void pushTask(String redisKey, JSONObject task, Boolean duplication);
 
     void pushTask(String redisKey, JSONObject task);
 

@@ -1,7 +1,6 @@
 package com.example.crawler.event;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.crawler.entity.Constant;
 import com.example.crawler.entity.Event;
 import com.example.crawler.service.ITaskService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -39,8 +38,17 @@ public class EventConsumer {
             logger.error("消息格式错误!");
             return;
         }
-
-        iTaskService.pushTask(event.getTask(), true);
+        JSONObject task = event.getTask();
+        String taskType = task.getString("taskType");
+        String policyMode = task.getString("policyMode");
+        if ("plugin".equals(policyMode)) {
+            // 策略模式为通用插件爬虫
+            iTaskService.pushTask(null, event.getTask(), true);
+        } else if ("config".equals(policyMode)) {
+            // 策略模式为通用配置爬虫
+            String redisKey = String.format("%s:%s", "NORMAL", taskType);
+            iTaskService.pushTask(redisKey, event.getTask(), true);
+        }
         logger.info("Kafka处理Event:" + event.toString());
     }
 

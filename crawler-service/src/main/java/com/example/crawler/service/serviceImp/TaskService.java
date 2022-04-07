@@ -151,20 +151,20 @@ public class TaskService implements ITaskService {
     }
 
     @Override
-    public void pushTask(JSONObject task, Boolean duplication) {
+    public void pushTask(String redisKey, JSONObject task, Boolean duplication) {
         if (duplication) {
             // 根据消重结果判断是否进入爬虫任务队列
             Boolean exist = doDeduplication(task);
             // 爬虫端生成子任务，需要进入消重流程
             if (!exist) {
-                iTaskDao.pushTask(null, task);
+                iTaskDao.pushTask(redisKey, task);
                 log.info(String.format("爬虫子任务不需要消重:[%s]", task.toJSONString()));
             } else {
                 log.warn(String.format("爬虫子任务已被消重:[%s]", task.toJSONString()));
             }
         } else {
             // 任务来源程序生成任务，不需要进行消重
-            iTaskDao.pushTask(null, task);
+            iTaskDao.pushTask(redisKey, task);
             log.info(String.format("任务来源程序生成任务，不需要消重:[%s]", task.toJSONString()));
         }
     }
@@ -196,7 +196,11 @@ public class TaskService implements ITaskService {
     @Override
     public Boolean acknowledgeTask(JSONObject task) {
         String policyId = task.getString("policyId");
+        String policyMode = task.getString("policyMode");
         String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
+        if ("config".equals(policyMode)) {
+            redisKey = String.format("%s:%s", "NORMAL", REDIS_KEY_IN_PROGRESS_TASK);
+        }
         return iTaskDao.removeProgessTask(redisKey, task);
     }
 
@@ -233,6 +237,9 @@ public class TaskService implements ITaskService {
                 if ("config".equals(policyMode)) {
                     // 策略工作模式为通用配置爬虫，需要将companyName字段添加具体的通用配置
                     childTask.put("companyName", parentTask.getString("companyName"));
+                    childTask.put("policyMode", "config");
+                } else {
+                    childTask.put("policyMode", "plugin");
                 }
                 Event event = new Event()
                         .setPolicyId(policyId)

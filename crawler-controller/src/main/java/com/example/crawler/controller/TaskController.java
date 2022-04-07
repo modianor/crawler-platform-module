@@ -72,7 +72,7 @@ public class TaskController {
     @ResponseBody
     public String generateTaskParam(String taskParam) {
         JSONObject task = JSON.parseObject(taskParam);
-        iTaskService.pushTask(task, true);
+        iTaskService.pushTask(null, task, true);
         return "{\"status\":\"ok\"}";
     }
 
@@ -82,7 +82,14 @@ public class TaskController {
         JSONObject task = JSON.parseObject(taskParam);
         // 为任务来源生成的任务添加taskID
         TaskUtil.generatorTaskId(task);
-        iTaskService.pushTask(task, false);
+
+        String taskType = task.getString("taskType");
+        String policyMode = task.getString("policyMode");
+        String redisKey = null;
+        if ("config".equals(policyMode)) {
+            redisKey = String.format("%s:%s", "NORMAL", taskType);
+        }
+        iTaskService.pushTask(redisKey, task, false);
         return "{\"status\":\"ok\"}";
     }
 

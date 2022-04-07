@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.example.crawler.entity.Constant.*;
@@ -68,7 +66,11 @@ public class TaskDao implements ITaskDao {
     public void pushProgressTask(JSONObject task) {
         String policyId = task.getString("policyId");
         String taskId = task.getString("taskId");
+        String policyMode = task.getString("policyMode");
         String redisKey = String.format("%s:%s", policyId, REDIS_KEY_IN_PROGRESS_TASK);
+        if ("config".equals(policyMode)) {
+            redisKey = String.format("%s:%s", "NORMAL", REDIS_KEY_IN_PROGRESS_TASK);
+        }
         redisTemplate.opsForHash().put(redisKey, taskId, task.toJSONString());
     }
 
